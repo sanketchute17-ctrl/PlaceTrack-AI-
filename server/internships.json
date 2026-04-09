@@ -1,0 +1,14 @@
+[
+  {
+    "id": "int_1774344025901",
+    "name": "Google",
+    "role": "Prompt engineer",
+    "package": "15000",
+    "location": "Pune",
+    "duration": "3",
+    "eligibility": [
+      "Communication"
+    ],
+    "created_at": "2026-03-24T09:20:25.902Z"
+  }
+]
