@@ -1,6 +1,7 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, useNavigate } from 'react';
 import { useContext } from 'react';
 import Layout from './components/Layout';
+import Landing from './pages/Landing';
 import Dashboard from './pages/Dashboard';
 import Students from './pages/Students';
 import Companies from './pages/Companies';
@@ -13,51 +14,60 @@ import Settings from './pages/Settings';
 import Login from './pages/Login';
 import ErrorBoundary from './components/ErrorBoundary';
 import { AuthProvider, AuthContext } from './context/AuthContext';
+import { Lock, ArrowRight } from 'lucide-react';
 
-const Placeholder = ({ title }) => (
-  <div className="flex items-center justify-center min-h-[60vh] bg-[#1e1e1e] rounded-xl border border-[#333] shadow-sm p-8">
-    <div className="text-center space-y-4">
-      <div className="w-16 h-16 bg-red-500/10 rounded-full mx-auto flex items-center justify-center border border-red-500/20">
-        <span className="text-red-400 font-bold text-xl">{title[0]}</span>
+const LockedOverlay = ({ pageTitle = "Protected Feature" }) => {
+  const navigate = useNavigate();
+
+  return (
+    <div className="relative min-h-[70vh] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-[#121212]/85 backdrop-blur-md z-20 flex flex-col items-center justify-center text-center p-6 rounded-3xl border border-red-500/20 shadow-2xl">
+        <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 flex items-center justify-center mb-4 shadow-inner">
+          <Lock size={32} />
+        </div>
+        <h2 className="text-2xl sm:text-3xl font-black text-white mb-2 tracking-tight">
+          Sign In Required to Access {pageTitle}
+        </h2>
+        <p className="text-zinc-400 text-xs sm:text-sm max-w-md mb-6 leading-relaxed">
+          Create a free account or sign in to view live student directories, ATS resume scores, company drives, and recruitment analytics.
+        </p>
+        <button
+          onClick={() => navigate('/login')}
+          className="px-6 py-3.5 bg-gradient-to-r from-red-600 via-rose-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white font-extrabold rounded-2xl text-sm transition-all shadow-[0_0_25px_rgba(239,68,68,0.4)] flex items-center gap-2 cursor-pointer"
+        >
+          <span>Sign In / Create Free Account</span>
+          <ArrowRight size={18} />
+        </button>
       </div>
-      <h2 className="text-xl font-semibold text-zinc-100">{title} Loaded</h2>
-      <p className="text-sm text-zinc-500">Component successfully routed.</p>
     </div>
-  </div>
-);
+  );
+};
 
-const NotFound = () => (
-  <div className="flex items-center justify-center min-h-[60vh] bg-[#1e1e1e] rounded-xl border border-[#333] shadow-sm p-8">
-    <div className="text-center space-y-4">
-      <div className="w-16 h-16 bg-red-50 rounded-full mx-auto flex items-center justify-center border border-red-200">
-        <span className="text-red-500 font-bold text-xl">404</span>
-      </div>
-      <h2 className="text-2xl font-bold text-zinc-100">Page Not Found</h2>
-      <p className="text-zinc-400">The page you are looking for does not exist.</p>
-    </div>
-  </div>
-);
-
-const PrivateRoute = ({ children }) => {
+const PrivateRoute = ({ children, pageTitle = "Feature" }) => {
   const { token, loading } = useContext(AuthContext);
-  if (loading) return null; // Wait for initial mount
-  return token ? children : <Navigate to="/login" />;
+  if (loading) return null;
+  return token ? children : <Layout><LockedOverlay pageTitle={pageTitle} /></Layout>;
 };
 
 function AppRoutes() {
+  const { token, loading } = useContext(AuthContext);
+
+  if (loading) return null;
+
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
-      <Route path="/" element={<PrivateRoute><Layout><Dashboard /></Layout></PrivateRoute>} />
-      <Route path="/students" element={<PrivateRoute><Layout><Students /></Layout></PrivateRoute>} />
-      <Route path="/companies" element={<PrivateRoute><Layout><Companies /></Layout></PrivateRoute>} />
-      <Route path="/internships" element={<PrivateRoute><Layout><Internships /></Layout></PrivateRoute>} />
-      <Route path="/search" element={<PrivateRoute><Layout><Search /></Layout></PrivateRoute>} />
-      <Route path="/ats-checker" element={<PrivateRoute><Layout><AtsChecker /></Layout></PrivateRoute>} />
-      <Route path="/interviews" element={<PrivateRoute><Layout><Interviews /></Layout></PrivateRoute>} />
-      <Route path="/reports" element={<PrivateRoute><Layout><Reports /></Layout></PrivateRoute>} />
-      <Route path="/settings" element={<PrivateRoute><Layout><Settings /></Layout></PrivateRoute>} />
-      <Route path="*" element={<Layout><NotFound /></Layout>} />
+      <Route path="/landing" element={<Landing />} />
+      <Route path="/" element={token ? <Layout><Dashboard /></Layout> : <Landing />} />
+      <Route path="/students" element={<PrivateRoute pageTitle="Student Directory"><Students /></PrivateRoute>} />
+      <Route path="/companies" element={<PrivateRoute pageTitle="Visiting Companies"><Companies /></PrivateRoute>} />
+      <Route path="/internships" element={<PrivateRoute pageTitle="Active Internships"><Internships /></PrivateRoute>} />
+      <Route path="/search" element={<PrivateRoute pageTitle="Search Aggregator"><Search /></PrivateRoute>} />
+      <Route path="/ats-checker" element={<PrivateRoute pageTitle="AI ATS Checker"><AtsChecker /></PrivateRoute>} />
+      <Route path="/interviews" element={<PrivateRoute pageTitle="Interview Rounds"><Interviews /></PrivateRoute>} />
+      <Route path="/reports" element={<PrivateRoute pageTitle="Analytics & Reports"><Reports /></PrivateRoute>} />
+      <Route path="/settings" element={<PrivateRoute pageTitle="Account Settings"><Settings /></PrivateRoute>} />
+      <Route path="*" element={<Landing />} />
     </Routes>
   );
 }
