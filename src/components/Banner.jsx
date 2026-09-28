@@ -15,13 +15,13 @@ export default function Banner() {
           <Sparkles size={16} />
         </span>
         <span className="text-zinc-200">
-          <strong className="text-white font-bold">Guest Preview Mode:</strong> Sign In or Create an Account to unlock AI ATS Scanning, Company Applications & Student Portals.
+          <strong className="text-white font-bold">⚠️ Guest Mode Active:</strong> Until you sign in, placement features (AI ATS, Student Portals & Applications) are locked. <span className="hidden md:inline text-red-200 font-semibold">Sign in to unlock full benefits!</span>
         </span>
         <button
           onClick={() => navigate('/login')}
           className="ml-2 px-3 py-1 bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white font-bold rounded-lg text-xs transition-all shadow-sm flex items-center gap-1 shrink-0 cursor-pointer"
         >
-          <span>Sign In</span>
+          <span>Sign In / Register</span>
           <ArrowRight size={12} />
         </button>
       </div>

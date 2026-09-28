@@ -1,11 +1,11 @@
-import { Bell, Search, LogOut, Menu } from 'lucide-react';
+import { Bell, Search, LogOut, Menu, ArrowRight } from 'lucide-react';
 import { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import Logo from './Logo';
 
 export default function TopNavbar({ setIsMobileOpen }) {
-  const { user, logout } = useContext(AuthContext);
+  const { user, logout, token } = useContext(AuthContext);
   const [showNotifs, setShowNotifs] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
@@ -89,13 +89,25 @@ export default function TopNavbar({ setIsMobileOpen }) {
         )}
         
         <div className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-4 border-l border-[#333]">
-          <div className="hidden md:block text-right">
-            <p className="text-xs sm:text-sm font-semibold text-zinc-100">{user?.name || 'Guest User'}</p>
-            <p className="text-[10px] sm:text-xs text-zinc-500 capitalize font-medium">{user?.role || 'Guest'}</p>
-          </div>
-          <button onClick={logout} className="p-2 text-slate-400 hover:text-red-500 cursor-pointer rounded-full hover:bg-red-500/10 transition-colors" title="Logout">
-             <LogOut size={18} />
-          </button>
+          {token ? (
+            <>
+              <div className="hidden md:block text-right">
+                <p className="text-xs sm:text-sm font-semibold text-zinc-100">{user?.name || 'User'}</p>
+                <p className="text-[10px] sm:text-xs text-zinc-500 capitalize font-medium">{user?.role || 'Member'}</p>
+              </div>
+              <button onClick={logout} className="p-2 text-slate-400 hover:text-red-500 cursor-pointer rounded-full hover:bg-red-500/10 transition-colors" title="Logout">
+                 <LogOut size={18} />
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => navigate('/login')}
+              className="px-3.5 py-1.5 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-bold rounded-xl text-xs transition-all shadow-[0_0_15px_rgba(239,68,68,0.3)] flex items-center gap-1.5 cursor-pointer"
+            >
+              <span>Sign In / Register</span>
+              <ArrowRight size={14} />
+            </button>
+          )}
         </div>
       </div>
     </header>

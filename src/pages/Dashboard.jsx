@@ -5,6 +5,7 @@ import StatCard from '../components/StatCard';
 import DashboardCharts from '../components/DashboardCharts';
 import ActivityFeed from '../components/ActivityFeed';
 import Skeleton from '../components/Skeleton';
+import Logo from '../components/Logo';
 import { Users, TrendingUp, Building2, Award } from 'lucide-react';
 
 export default function Dashboard() {
@@ -65,9 +66,12 @@ export default function Dashboard() {
   return (
     <AnimatedPage className="space-y-6 pb-12">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-2">
-        <div>
-          <h2 className="text-2xl font-bold text-white tracking-tight">Placement Overview</h2>
-          <p className="text-zinc-500 text-sm mt-1.5">Here's what's happening with campus recruitment today.</p>
+        <div className="flex items-center gap-4">
+          <Logo size="md" showText={false} className="hidden sm:flex" />
+          <div>
+            <h2 className="text-2xl font-bold text-white tracking-tight">Placement Overview</h2>
+            <p className="text-zinc-500 text-sm mt-0.5">Here's what's happening with campus recruitment today.</p>
+          </div>
         </div>
         <div className="flex items-center gap-3">
           <button className="px-4 py-2 bg-red-500 text-white text-sm font-medium rounded-lg hover:bg-red-600 transition-colors shadow-sm cursor-pointer" onClick={() => window.location.reload()}>

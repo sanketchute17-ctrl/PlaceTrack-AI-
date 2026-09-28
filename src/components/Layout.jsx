@@ -1,10 +1,13 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import Sidebar from './Sidebar';
 import TopNavbar from './TopNavbar';
+import Banner from './Banner';
+import { AuthContext } from '../context/AuthContext';
 
 export default function Layout({ children }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const { token } = useContext(AuthContext);
 
   return (
     <div className="flex min-h-dvh bg-[#121212] text-zinc-100 font-sans selection:bg-red-500/20 selection:text-white relative overflow-x-hidden">
@@ -31,6 +34,7 @@ export default function Layout({ children }) {
         />
 
         <div className={`flex-1 flex flex-col transition-all duration-300 w-full min-w-0 ${isCollapsed ? 'md:ml-20' : 'md:ml-64'} ml-0`}>
+          {!token && <Banner />}
           <TopNavbar setIsMobileOpen={setIsMobileOpen} />
           
           <main className="flex-1 p-4 sm:p-6 lg:p-8 z-10 overflow-x-hidden relative max-w-[1600px] mx-auto w-full">
