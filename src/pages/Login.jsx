@@ -2,7 +2,8 @@ import { useState, useContext, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, Briefcase, ShieldCheck, Mail, Lock, Rocket, Sparkles, MoveRight, Bot, Send, X } from 'lucide-react';
+import { User, Briefcase, ShieldCheck, Mail, Lock, Rocket, MoveRight, Bot, Send, X } from 'lucide-react';
+import Logo from '../components/Logo';
 
 export default function Login() {
   const { login, register } = useContext(AuthContext);
@@ -142,17 +143,18 @@ export default function Login() {
         ))}
       </motion.div>
 
+      {/* LEFT HERO PANEL WITH BRAND LOGO */}
       <div className="absolute left-16 2xl:left-32 top-1/2 -translate-y-1/2 hidden lg:flex flex-col z-10 max-w-xl pointer-events-none">
         <motion.div initial={{ opacity: 0, x: -60, filter: 'blur(10px)' }} animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }} transition={{ duration: 1, ease: "easeOut" }}>
-          <div className="inline-flex items-center justify-center p-4 rounded-3xl bg-white/5 backdrop-blur-2xl border border-white/10 mb-8 shadow-[0_0_40px_-10px_rgba(248,113,113,0.4)]">
-            <Sparkles size={44} className="text-red-400" />
-          </div>
-          <h1 className="text-7xl xl:text-[88px] font-black text-white tracking-widest mb-6 leading-none shadow-black/50 drop-shadow-2xl">
+          
+          <Logo size="lg" className="mb-6 pointer-events-auto" />
+          
+          <h1 className="text-6xl xl:text-[76px] font-black text-white tracking-widest mb-6 leading-none shadow-black/50 drop-shadow-2xl">
             PlaceTrack
             <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#f87171] to-[#fb7185] filter drop-shadow-[0_0_20px_rgba(239,68,68,0.4)]">Portal</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#f87171] via-[#fb7185] to-[#f97316] filter drop-shadow-[0_0_20px_rgba(239,68,68,0.4)]">Portal</span>
           </h1>
-          <p className="text-[#94a3b8] font-medium text-xl leading-relaxed max-w-lg border-l-4 border-red-500 pl-4">A state-of-the-art ecosystem bridging the gap between top talent, aggressive hiring companies, and seamless administration.</p>
+          <p className="text-[#94a3b8] font-medium text-lg leading-relaxed max-w-lg border-l-4 border-red-500 pl-4">A state-of-the-art AI ecosystem bridging top talent, hiring partners, and campus recruitment officers.</p>
         </motion.div>
       </div>
 
@@ -161,8 +163,8 @@ export default function Login() {
         
         <div className="relative bg-[#121212]/70 backdrop-blur-3xl border border-white/10 px-8 sm:px-10 py-8 rounded-[2.5rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.8),0_0_30px_-5px_rgba(248,113,113,0.2)] overflow-hidden">
           
-          <div className="text-center mb-6 lg:hidden">
-             <h2 className="text-3xl font-extrabold text-white tracking-tight">PlaceTrack <span className="text-red-400">Portal</span></h2>
+          <div className="text-center mb-6 lg:hidden flex justify-center">
+             <Logo size="md" />
           </div>
 
           <h3 className="text-2xl font-bold text-white mb-1">{isLogin ? 'Welcome Back' : 'Join the Ecosystem'}</h3>
@@ -174,13 +176,13 @@ export default function Login() {
           <div className="mb-5 bg-[#181818]/90 p-2.5 rounded-2xl border border-white/10">
             <p className="text-[10px] font-bold text-red-400 uppercase tracking-wider mb-2 text-center">⚡ Quick 1-Click Demo Login</p>
             <div className="flex gap-2">
-              <button type="button" onClick={() => handleFillDemo('student')} className="flex-1 py-1.5 px-2 bg-red-500/10 hover:bg-red-500/20 text-red-300 text-[11px] font-bold rounded-xl border border-red-500/30 transition-all text-center">
+              <button type="button" onClick={() => handleFillDemo('student')} className="flex-1 py-1.5 px-2 bg-red-500/10 hover:bg-red-500/20 text-red-300 text-[11px] font-bold rounded-xl border border-red-500/30 transition-all text-center cursor-pointer">
                 Student
               </button>
-              <button type="button" onClick={() => handleFillDemo('company')} className="flex-1 py-1.5 px-2 bg-orange-500/10 hover:bg-orange-500/20 text-orange-300 text-[11px] font-bold rounded-xl border border-orange-500/30 transition-all text-center">
+              <button type="button" onClick={() => handleFillDemo('company')} className="flex-1 py-1.5 px-2 bg-orange-500/10 hover:bg-orange-500/20 text-orange-300 text-[11px] font-bold rounded-xl border border-orange-500/30 transition-all text-center cursor-pointer">
                 Company
               </button>
-              <button type="button" onClick={() => handleFillDemo('admin')} className="flex-1 py-1.5 px-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-[11px] font-bold rounded-xl border border-rose-500/30 transition-all text-center">
+              <button type="button" onClick={() => handleFillDemo('admin')} className="flex-1 py-1.5 px-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-[11px] font-bold rounded-xl border border-rose-500/30 transition-all text-center cursor-pointer">
                 Admin
               </button>
             </div>

@@ -2,6 +2,7 @@ import { Bell, Search, LogOut } from 'lucide-react';
 import { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import Logo from './Logo';
 
 export default function TopNavbar() {
   const { user, logout } = useContext(AuthContext);
@@ -18,16 +19,23 @@ export default function TopNavbar() {
 
   return (
     <header className="h-16 bg-[#1e1e1e] border-b border-[#333] flex items-center justify-between px-6 sticky top-0 z-40 transition-all">
-      <div className="flex items-center gap-3 bg-[#121212] border border-[#333] px-3 py-2 rounded-xl text-zinc-400 focus-within:border-red-500/50 focus-within:ring-1 focus-within:ring-red-500/30 transition-all w-full max-w-sm">
-        <Search size={18} className="flex-shrink-0" />
-        <input 
-          type="text" 
-          placeholder="Search companies, roles, skills..." 
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          onKeyDown={handleSearch}
-          className="bg-transparent border-none outline-none text-sm text-zinc-100 placeholder:text-zinc-500 w-full"
-        />
+      <div className="flex items-center gap-4">
+        {/* LOGO VISIBLE ON MOBILE / TABLET */}
+        <div className="lg:hidden">
+          <Logo size="sm" showText={false} />
+        </div>
+
+        <div className="flex items-center gap-3 bg-[#121212] border border-[#333] px-3 py-2 rounded-xl text-zinc-400 focus-within:border-red-500/50 focus-within:ring-1 focus-within:ring-red-500/30 transition-all w-full max-w-sm">
+          <Search size={18} className="flex-shrink-0" />
+          <input 
+            type="text" 
+            placeholder="Search companies, roles, skills..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={handleSearch}
+            className="bg-transparent border-none outline-none text-sm text-zinc-100 placeholder:text-zinc-500 w-full"
+          />
+        </div>
       </div>
 
       <div className="flex items-center gap-4 relative">
@@ -80,7 +88,7 @@ export default function TopNavbar() {
         
         <div className="flex items-center gap-3 pl-4 border-l border-[#333]">
           <div className="hidden md:block text-right">
-            <p className="text-sm font-semibold text-zinc-100">{user?.name || 'Loading...'}</p>
+            <p className="text-sm font-semibold text-zinc-100">{user?.name || 'Guest User'}</p>
             <p className="text-xs text-zinc-500 capitalize font-medium">{user?.role || 'Guest'}</p>
           </div>
           <button onClick={logout} className="p-2 text-slate-400 hover:text-red-600 cursor-pointer rounded-full hover:bg-red-500/10 transition-colors" title="Logout">
