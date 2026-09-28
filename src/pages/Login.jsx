@@ -2,7 +2,7 @@ import { useState, useContext, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, Briefcase, ShieldCheck, Mail, Lock, Rocket, Sparkles, MoveRight, MessageCircle, X, Bot, Send } from 'lucide-react';
+import { User, Briefcase, ShieldCheck, Mail, Lock, Rocket, Sparkles, MoveRight, Bot, Send, X } from 'lucide-react';
 
 export default function Login() {
   const { login, register } = useContext(AuthContext);
@@ -16,9 +16,27 @@ export default function Login() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState([
-    { sender: 'ai', text: 'Hello! I am your AI assistant. I can guide you through the login process. Are you logging in as a Student, Company, or Admin?' }
+    { sender: 'ai', text: 'Hello! I am your AI assistant. You can login using demo credentials or click "Create Account" to register.' }
   ]);
   const [chatInput, setChatInput] = useState('');
+
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: ''
+  });
+
+  const handleFillDemo = (role) => {
+    setSelectedRole(role);
+    setIsLogin(true);
+    setError('');
+    setSuccessMsg('');
+    setFormData({
+      name: '',
+      email: `${role}@test.com`,
+      password: '123456'
+    });
+  };
 
   const handleSendMessage = (e) => {
     e.preventDefault();
@@ -29,30 +47,22 @@ export default function Login() {
     setChatInput('');
     
     setTimeout(() => {
-      let aiResponse = "I can guide you! Please select your role (Student, Company, Admin) and enter your credentials.";
+      let aiResponse = "I can guide you! Select your role (Student, Company, Admin), enter your email & password, or use the 1-Click Demo buttons.";
       const lowerInput = chatInput.toLowerCase();
       
       if (lowerInput.includes('student')) {
-        aiResponse = "Great! Select 'Student' from the Account Tier, then enter your email and password to sign in.";
+        aiResponse = "Student account: You can click the 'Demo Student' quick fill button or register with your email!";
       } else if (lowerInput.includes('company')) {
-        aiResponse = "Welcome! Select 'Company', then use your corporate email to access your dashboard.";
+        aiResponse = "Company account: Click 'Demo Company' or register your corporate account under Company tier.";
       } else if (lowerInput.includes('admin')) {
-        aiResponse = "Hello Admin. Please select 'Admin' and enter your secure credentials.";
+        aiResponse = "Admin account: Click 'Demo Admin' or sign in as Admin.";
       } else if (lowerInput.includes('register') || lowerInput.includes('create account')) {
-        aiResponse = "To create a new account, click the 'Create Account' tab, select your role, and fill in your details.";
-      } else if (lowerInput.includes('forgot') || lowerInput.includes('password')) {
-        aiResponse = "If you forgot your password, please contact the administrator as password reset is currently unavailable in this demo.";
+        aiResponse = "To create a new account, click the 'Create Account' tab, select your role, enter name, email, password and click 'Initialize Account'.";
       }
       
       setChatMessages(prev => [...prev, { sender: 'ai', text: aiResponse }]);
     }, 600);
   };
-
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: ''
-  });
 
   // Smooth Parallax Effect for Background Layers
   useEffect(() => {
@@ -90,18 +100,16 @@ export default function Login() {
         setLaunching(true);
         setTimeout(() => {
           navigate('/');
-        }, 1500); 
+        }, 1200); 
       } else {
-        // Success routing - Force them to login
         setIsLogin(true);
-        setSuccessMsg(`Your ${selectedRole.toUpperCase()} account has been created securely! You may now authenticate.`);
-        setFormData({ ...formData, password: '' });
+        setSuccessMsg(`Your ${selectedRole.toUpperCase()} account was created! Auto-filled credentials. Click Authenticate to enter.`);
+        setFormData({ ...formData, email: formData.email, password: formData.password });
         setLoading(false);
       }
     } else {
-      setError(result?.message || 'Authentication failed. Network Error.');
+      setError(result?.message || 'Authentication failed. Please check credentials.');
       setLoading(false);
-      setFormData({ ...formData, password: '' });
     }
   };
 
@@ -151,37 +159,53 @@ export default function Login() {
       <motion.div initial={{ opacity: 0, scale: 0.9, y: 30, rotateX: 10 }} animate={{ opacity: 1, scale: 1, y: 0, rotateX: 0 }} transition={{ type: "spring", stiffness: 100, damping: 20 }} style={{ perspective: 1000 }} className="w-full max-w-[460px] z-20 mx-4 lg:mx-0 relative">
         <div className="absolute -inset-[1px] bg-gradient-to-br from-red-500/30 via-transparent to-rose-500/30 rounded-[2.5rem] blur-sm pointer-events-none"></div>
         
-        <div className="relative bg-[#121212]/70 backdrop-blur-3xl border border-white/10 px-8 sm:px-10 py-10 rounded-[2.5rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.8),0_0_30px_-5px_rgba(248,113,113,0.2)] overflow-hidden">
+        <div className="relative bg-[#121212]/70 backdrop-blur-3xl border border-white/10 px-8 sm:px-10 py-8 rounded-[2.5rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.8),0_0_30px_-5px_rgba(248,113,113,0.2)] overflow-hidden">
           
-          <div className="text-center mb-8 lg:hidden">
+          <div className="text-center mb-6 lg:hidden">
              <h2 className="text-3xl font-extrabold text-white tracking-tight">PlaceTrack <span className="text-red-400">Portal</span></h2>
           </div>
 
-          <h3 className="text-2xl font-bold text-white mb-2">{isLogin ? 'Welcome Back' : 'Join the Ecosystem'}</h3>
-          <p className="text-slate-400 text-sm mb-6 font-medium">
-            {isLogin ? 'Ensure you select your correct role tier before entering credentials.' : 'Select your designated role to register your account.'}
+          <h3 className="text-2xl font-bold text-white mb-1">{isLogin ? 'Welcome Back' : 'Join the Ecosystem'}</h3>
+          <p className="text-slate-400 text-xs mb-4 font-medium">
+            {isLogin ? 'Select your role or click a 1-Click Demo Login below.' : 'Fill in your details to create a new account.'}
           </p>
 
-          <form onSubmit={handleSubmit} className="space-y-5 relative">
+          {/* 1-CLICK QUICK DEMO LOGIN BUTTONS */}
+          <div className="mb-5 bg-[#181818]/90 p-2.5 rounded-2xl border border-white/10">
+            <p className="text-[10px] font-bold text-red-400 uppercase tracking-wider mb-2 text-center">⚡ Quick 1-Click Demo Login</p>
+            <div className="flex gap-2">
+              <button type="button" onClick={() => handleFillDemo('student')} className="flex-1 py-1.5 px-2 bg-red-500/10 hover:bg-red-500/20 text-red-300 text-[11px] font-bold rounded-xl border border-red-500/30 transition-all text-center">
+                Student
+              </button>
+              <button type="button" onClick={() => handleFillDemo('company')} className="flex-1 py-1.5 px-2 bg-orange-500/10 hover:bg-orange-500/20 text-orange-300 text-[11px] font-bold rounded-xl border border-orange-500/30 transition-all text-center">
+                Company
+              </button>
+              <button type="button" onClick={() => handleFillDemo('admin')} className="flex-1 py-1.5 px-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-[11px] font-bold rounded-xl border border-rose-500/30 transition-all text-center">
+                Admin
+              </button>
+            </div>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4 relative">
             
-            <div className="flex bg-[#1e1e1e]/80 rounded-2xl p-1 mb-6 shadow-inner border border-white/5 relative z-10 w-full overflow-hidden">
+            <div className="flex bg-[#1e1e1e]/80 rounded-2xl p-1 mb-4 shadow-inner border border-white/5 relative z-10 w-full overflow-hidden">
               <motion.div layoutId="tabIndicator" className="absolute inset-y-1 w-[calc(50%-0.25rem)] bg-gradient-to-br from-[#f87171] to-[#dc2626] rounded-xl shadow-[0_0_20px_-5px_rgba(248,113,113,0.6)]" initial={false} animate={{ left: isLogin ? '0.25rem' : 'calc(50% + 0.125rem)' }} transition={{ type: "spring", stiffness: 300, damping: 25 }} />
-              <button onClick={(e) => { e.preventDefault(); setIsLogin(true); setError(''); setSuccessMsg(''); }} className={`relative z-10 flex-1 py-3 text-sm font-bold rounded-xl transition-colors duration-300 cursor-pointer ${isLogin ? 'text-white' : 'text-slate-400 hover:text-slate-200'}`}>Sign In</button>
-              <button onClick={(e) => { e.preventDefault(); setIsLogin(false); setError(''); setSuccessMsg(''); }} className={`relative z-10 flex-1 py-3 text-sm font-bold rounded-xl transition-colors duration-300 cursor-pointer ${!isLogin ? 'text-white' : 'text-slate-400 hover:text-slate-200'}`}>Create Account</button>
+              <button onClick={(e) => { e.preventDefault(); setIsLogin(true); setError(''); setSuccessMsg(''); }} className={`relative z-10 flex-1 py-2.5 text-xs font-bold rounded-xl transition-colors duration-300 cursor-pointer ${isLogin ? 'text-white' : 'text-slate-400 hover:text-slate-200'}`}>Sign In</button>
+              <button onClick={(e) => { e.preventDefault(); setIsLogin(false); setError(''); setSuccessMsg(''); }} className={`relative z-10 flex-1 py-2.5 text-xs font-bold rounded-xl transition-colors duration-300 cursor-pointer ${!isLogin ? 'text-white' : 'text-slate-400 hover:text-slate-200'}`}>Create Account</button>
             </div>
 
             {/* ALWAYS SHOWN ROLE SELECTOR */}
             <div>
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3 ml-1">Account Tier</p>
-              <div className="grid grid-cols-3 gap-3">
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Account Tier</p>
+              <div className="grid grid-cols-3 gap-2.5">
                 {roles.map((role) => {
                   const Icon = role.icon;
                   const isSelected = selectedRole === role.id;
                   return (
-                    <button key={role.id} type="button" onClick={() => setSelectedRole(role.id)} className={`relative flex flex-col items-center justify-center p-3 rounded-2xl border transition-all duration-300 group overflow-hidden cursor-pointer ${isSelected ? role.color : 'border-white/5 bg-[#1e1e1e]/50 text-slate-400 hover:bg-[#1e1e1e]/80 hover:border-slate-500/30 hover:text-slate-200'}`}>
+                    <button key={role.id} type="button" onClick={() => setSelectedRole(role.id)} className={`relative flex flex-col items-center justify-center p-2.5 rounded-2xl border transition-all duration-300 group overflow-hidden cursor-pointer ${isSelected ? role.color : 'border-white/5 bg-[#1e1e1e]/50 text-slate-400 hover:bg-[#1e1e1e]/80 hover:border-slate-500/30 hover:text-slate-200'}`}>
                       {isSelected && <motion.div layoutId="roleGlow" className="absolute inset-0 bg-gradient-to-t from-white/10 to-transparent"></motion.div>}
-                      <Icon size={24} className={`mb-2 relative z-10 transition-transform ${isSelected ? '' : 'group-hover:-translate-y-1'}`} strokeWidth={isSelected ? 2.5 : 2} />
-                      <span className="text-[10px] sm:text-xs font-bold tracking-wide relative z-10">{role.label}</span>
+                      <Icon size={20} className={`mb-1 relative z-10 transition-transform ${isSelected ? '' : 'group-hover:-translate-y-1'}`} strokeWidth={isSelected ? 2.5 : 2} />
+                      <span className="text-[10px] font-bold tracking-wide relative z-10">{role.label}</span>
                     </button>
                   );
                 })}
@@ -190,39 +214,39 @@ export default function Login() {
             
             <AnimatePresence mode="popLayout" initial={false}>
               {!isLogin && (
-                <motion.div initial={{ opacity: 0, height: 0, scale: 0.95 }} animate={{ opacity: 1, height: 'auto', scale: 1 }} exit={{ opacity: 0, height: 0, scale: 0.95 }} transition={{ duration: 0.4, ease: "easeInOut" }} className="space-y-5 overflow-hidden">
+                <motion.div initial={{ opacity: 0, height: 0, scale: 0.95 }} animate={{ opacity: 1, height: 'auto', scale: 1 }} exit={{ opacity: 0, height: 0, scale: 0.95 }} transition={{ duration: 0.3, ease: "easeInOut" }} className="space-y-3 overflow-hidden">
                   <div className="relative group">
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-[#f87171] transition-colors duration-300" size={20} />
-                    <input required={!isLogin} value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} type="text" placeholder="Full Name" className="w-full pl-12 pr-4 py-3.5 bg-[#1e1e1e]/60 border border-white/5 rounded-2xl text-white placeholder:text-slate-500 focus:outline-none focus:bg-[#1e1e1e]/80 focus:border-[#f87171]/50 focus:ring-1 focus:ring-[#f87171] transition-all shadow-inner font-medium" />
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-[#f87171] transition-colors duration-300" size={18} />
+                    <input required={!isLogin} value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} type="text" placeholder="Full Name" className="w-full pl-11 pr-4 py-3 bg-[#1e1e1e]/60 border border-white/5 rounded-2xl text-white text-sm placeholder:text-slate-500 focus:outline-none focus:bg-[#1e1e1e]/80 focus:border-[#f87171]/50 focus:ring-1 focus:ring-[#f87171] transition-all shadow-inner font-medium" />
                   </div>
                 </motion.div>
               )}
             </AnimatePresence>
 
             <div className="relative group">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-[#f87171] transition-colors duration-300" size={20} />
-              <input required value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} type="email" placeholder="Corporate Email" className="w-full pl-12 pr-4 py-3.5 bg-[#1e1e1e]/60 border border-white/5 rounded-2xl text-white placeholder:text-slate-500 focus:outline-none focus:bg-[#1e1e1e]/80 focus:border-[#f87171]/50 focus:ring-1 focus:ring-[#f87171] transition-all shadow-inner font-medium" />
+              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-[#f87171] transition-colors duration-300" size={18} />
+              <input required value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} type="email" placeholder="Email Address" className="w-full pl-11 pr-4 py-3 bg-[#1e1e1e]/60 border border-white/5 rounded-2xl text-white text-sm placeholder:text-slate-500 focus:outline-none focus:bg-[#1e1e1e]/80 focus:border-[#f87171]/50 focus:ring-1 focus:ring-[#f87171] transition-all shadow-inner font-medium" />
             </div>
 
             <div className="relative group">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-[#f87171] transition-colors duration-300" size={20} />
-              <input required value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} type="password" placeholder="Password Array" className="w-full pl-12 pr-4 py-3.5 bg-[#1e1e1e]/60 border border-white/5 rounded-2xl text-white placeholder:text-slate-500 focus:outline-none focus:bg-[#1e1e1e]/80 focus:border-[#f87171]/50 focus:ring-1 focus:ring-[#f87171] transition-all shadow-inner font-medium" />
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-[#f87171] transition-colors duration-300" size={18} />
+              <input required value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} type="password" placeholder="Password" className="w-full pl-11 pr-4 py-3 bg-[#1e1e1e]/60 border border-white/5 rounded-2xl text-white text-sm placeholder:text-slate-500 focus:outline-none focus:bg-[#1e1e1e]/80 focus:border-[#f87171]/50 focus:ring-1 focus:ring-[#f87171] transition-all shadow-inner font-medium" />
             </div>
 
             <AnimatePresence>
               {error && (
-                <motion.div initial={{ opacity: 0, y: -10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="w-full p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-sm text-center font-medium shadow-[0_0_20px_rgba(239,68,68,0.15)] flex flex-col">
+                <motion.div initial={{ opacity: 0, y: -10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="w-full p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-xs text-center font-medium shadow-[0_0_20px_rgba(239,68,68,0.15)] flex flex-col">
                   {error}
                 </motion.div>
               )}
               {successMsg && (
-                <motion.div initial={{ opacity: 0, y: -10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="w-full p-4 rounded-xl bg-green-500/10 border border-green-500/30 text-green-400 text-sm text-center font-medium shadow-[0_0_20px_rgba(34,197,94,0.15)] flex flex-col">
+                <motion.div initial={{ opacity: 0, y: -10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="w-full p-3 rounded-xl bg-green-500/10 border border-green-500/30 text-green-400 text-xs text-center font-medium shadow-[0_0_20px_rgba(34,197,94,0.15)] flex flex-col">
                   {successMsg}
                 </motion.div>
               )}
             </AnimatePresence>
 
-            <div className="pt-4 relative min-h-[60px]">
+            <div className="pt-2 relative min-h-[50px]">
               
               {/* Cinematic Rocket Launch Sequence Layer */}
               <AnimatePresence>
@@ -236,14 +260,14 @@ export default function Login() {
                 )}
               </AnimatePresence>
 
-              <button type="submit" disabled={loading || launching} className={`relative w-full py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all duration-500 cursor-pointer overflow-hidden border ${launching ? 'bg-transparent border-transparent text-transparent shadow-none scale-90' : 'bg-gradient-to-r from-[#f87171] to-[#6366f1] hover:shadow-[0_0_30px_rgba(248,113,113,0.6)] text-white border-red-400/30 hover:scale-[1.02] active:scale-[0.98]'}`}>
+              <button type="submit" disabled={loading || launching} className={`relative w-full py-3.5 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all duration-500 cursor-pointer overflow-hidden border ${launching ? 'bg-transparent border-transparent text-transparent shadow-none scale-90' : 'bg-gradient-to-r from-[#f87171] to-[#6366f1] hover:shadow-[0_0_30px_rgba(248,113,113,0.6)] text-white border-red-400/30 hover:scale-[1.02] active:scale-[0.98]'}`}>
                 <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent opacity-50 rounded-2xl pointer-events-none"></div>
                 {!launching && (
                   <motion.div animate={{ opacity: 1 }} className="flex items-center justify-center gap-2 w-full h-full relative z-10">
-                    {loading ? <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : (
+                    {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : (
                       <>
-                        <span className="text-base tracking-wide">{isLogin ? 'Authenticate Sequence' : 'Initialize Account'}</span>
-                        <MoveRight size={20} className="group-hover:translate-x-1.5 transition-transform duration-300" strokeWidth={2.5} />
+                        <span className="text-sm tracking-wide">{isLogin ? 'Authenticate Sequence' : 'Initialize Account'}</span>
+                        <MoveRight size={18} className="group-hover:translate-x-1.5 transition-transform duration-300" strokeWidth={2.5} />
                       </>
                     )}
                   </motion.div>

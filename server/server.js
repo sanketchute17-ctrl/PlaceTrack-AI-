@@ -4,6 +4,8 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const { createClient } = require('@supabase/supabase-js');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 const app = express();
 
@@ -14,21 +16,48 @@ app.use(express.json());
 // 🔗 Supabase Connect
 const supabaseUrl = process.env.SUPABASE_URL || 'https://placeholder.supabase.co';
 const supabaseKey = process.env.SUPABASE_ANON_KEY || 'placeholder_key';
+const isSupabaseConfigured = supabaseUrl !== 'https://placeholder.supabase.co' && supabaseKey !== 'placeholder_key';
 
-if (supabaseUrl === 'https://placeholder.supabase.co') {
-  console.warn("⚠️ Warning: SUPABASE_URL or SUPABASE_ANON_KEY is missing in .env. Using fallback variables, database queries will fail until provided.");
+if (!isSupabaseConfigured) {
+  console.warn("⚠️ SUPABASE_URL or SUPABASE_ANON_KEY is missing. Using in-memory fallback store for auth and data.");
 }
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+// ---------------- IN-MEMORY FALLBACK STORE ----------------
+const fallbackUsers = [
+  { id: 'demo_1', name: 'Demo Student', email: 'student@test.com', passwordHash: bcrypt.hashSync('123456', 10), role: 'student' },
+  { id: 'demo_2', name: 'Demo Company', email: 'company@test.com', passwordHash: bcrypt.hashSync('123456', 10), role: 'company' },
+  { id: 'demo_3', name: 'Demo Admin', email: 'admin@test.com', passwordHash: bcrypt.hashSync('123456', 10), role: 'admin' },
+];
+
+const fallbackStudents = [
+  { id: 's1', name: 'Rahul Kumar', email: 'rahul@college.edu', branch: 'CSE', skills: ['React', 'Node.js', 'Java'], placementStatus: 'Selected', resumeScore: 88 },
+  { id: 's2', name: 'Priya Sharma', email: 'priya@college.edu', branch: 'ECE', skills: ['Python', 'SQL', 'C++'], placementStatus: 'Shortlisted', resumeScore: 82 },
+  { id: 's3', name: 'Amit Patel', email: 'amit@college.edu', branch: 'IT', skills: ['JavaScript', 'HTML/CSS'], placementStatus: 'Unplaced', resumeScore: 75 }
+];
+
+const fallbackCompanies = [
+  { id: 'c1', name: 'Google', role: 'Software Engineer', package: '45.0', location: 'Bangalore', type: 'Full-time', eligibility: ['React', 'Data Structures', 'System Design'] },
+  { id: 'c2', name: 'Microsoft', role: 'SDE Intern', package: '38.5', location: 'Hyderabad', type: 'Full-time', eligibility: ['C++', 'Algorithms', 'Azure'] },
+  { id: 'c3', name: 'Amazon', role: 'Frontend Engineer', package: '32.0', location: 'Remote', type: 'Full-time', eligibility: ['React', 'JavaScript', 'CSS'] }
+];
+
+const fallbackPlacements = [
+  { id: 'p1', studentId: 's1', companyId: 'c1', status: 'Selected', package: '45.0 LPA' },
+  { id: 'p2', studentId: 's2', companyId: 'c2', status: 'Shortlisted', package: '38.5 LPA' }
+];
+
+// Helper to sign JWT token
+const generateToken = (userId) => {
+  return jwt.sign({ id: userId }, process.env.JWT_SECRET || 'secret_fallback', { expiresIn: '30d' });
+};
 
 // ---------------- ROUTES ----------------
 
 // Health check
 app.get("/", (req, res) => {
-  res.send("🚀 API running with Supabase PostgreSQL...");
+  res.send("🚀 PlaceTrack AI API is active...");
 });
 
 // Health check for Vercel API
@@ -41,29 +70,69 @@ app.post("/api/auth/register", async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
 
-    // Check if user exists
-    const { data: existingUsers } = await supabase.from('users').select('*').eq('email', email);
-    if (existingUsers && existingUsers.length > 0) {
+    if (!name || !email || !password || !role) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanRole = role.trim().toLowerCase();
+
+    // 1. Try Supabase registration if configured
+    if (isSupabaseConfigured) {
+      try {
+        const { data: existingUsers } = await supabase.from('users').select('*').eq('email', cleanEmail);
+        if (existingUsers && existingUsers.length > 0) {
+          return res.status(400).json({ message: "Email already registered" });
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        const { data, error } = await supabase
+          .from('users')
+          .insert([{ name, email: cleanEmail, password: hashedPassword, role: cleanRole }])
+          .select();
+
+        if (!error && data && data.length > 0) {
+          const user = data[0];
+          const token = generateToken(user.id);
+          return res.json({ _id: user.id, name: user.name, email: user.email, role: user.role, token });
+        }
+      } catch (dbErr) {
+        console.warn("Supabase register error, falling back to memory store:", dbErr.message);
+      }
+    }
+
+    // 2. Fallback to Memory Store
+    const existing = fallbackUsers.find(u => u.email.toLowerCase() === cleanEmail);
+    if (existing) {
       return res.status(400).json({ message: "Email already registered" });
     }
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
+    const newUser = {
+      id: 'usr_' + Date.now(),
+      name,
+      email: cleanEmail,
+      passwordHash: hashedPassword,
+      role: cleanRole
+    };
 
-    const { data, error } = await supabase
-      .from('users')
-      .insert([{ name, email, password: hashedPassword, role }])
-      .select();
+    fallbackUsers.push(newUser);
+    const token = generateToken(newUser.id);
 
-    if (error) throw error;
+    return res.json({
+      _id: newUser.id,
+      name: newUser.name,
+      email: newUser.email,
+      role: newUser.role,
+      token
+    });
 
-    const user = data[0];
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET || 'secret_fallback', { expiresIn: '30d' });
-
-    res.json({ _id: user.id, name: user.name, email: user.email, role: user.role, token });
   } catch (err) {
     console.error("Auth Error:", err);
-    res.status(500).json({ message: err.message || "Database err! Make sure your Supabase `users` table is created." });
+    res.status(500).json({ message: "Server Error during registration: " + err.message });
   }
 });
 
@@ -72,25 +141,49 @@ app.post("/api/auth/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Use select('*') WITHOUT .single() to avoid errors when user doesn't exist
-    const { data, error } = await supabase.from('users').select('*').eq('email', email);
-    
-    if (error) {
-      console.error("Supabase Query Error:", error);
-      return res.status(500).json({ message: "Database error during login: " + error.message });
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and password are required" });
     }
 
-    if (!data || data.length === 0) {
+    const cleanEmail = email.trim().toLowerCase();
+
+    // 1. Try Supabase login if configured
+    if (isSupabaseConfigured) {
+      try {
+        const { data, error } = await supabase.from('users').select('*').eq('email', cleanEmail);
+        if (!error && data && data.length > 0) {
+          const user = data[0];
+          const isMatch = await bcrypt.compare(password, user.password);
+          if (isMatch) {
+            const token = generateToken(user.id);
+            return res.json({ _id: user.id, name: user.name, email: user.email, role: user.role, token });
+          }
+        }
+      } catch (dbErr) {
+        console.warn("Supabase login error, falling back to memory store:", dbErr.message);
+      }
+    }
+
+    // 2. Fallback to Memory Store
+    const user = fallbackUsers.find(u => u.email.toLowerCase() === cleanEmail);
+    if (!user) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    const user = data[0];
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).json({ message: "Invalid email or password" });
+    const isMatch = await bcrypt.compare(password, user.passwordHash);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid email or password" });
+    }
 
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET || 'secret_fallback', { expiresIn: '30d' });
+    const token = generateToken(user.id);
+    return res.json({
+      _id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      token
+    });
 
-    res.json({ _id: user.id, name: user.name, email: user.email, role: user.role, token });
   } catch (err) {
     console.error("Auth Error:", err);
     res.status(500).json({ message: "Server Error during login: " + err.message });
@@ -100,15 +193,14 @@ app.post("/api/auth/login", async (req, res) => {
 // ➤ Add Student
 app.post("/api/students", async (req, res) => {
   try {
-    const { data, error } = await supabase
-      .from('students')
-      .insert([req.body])
-      .select();
-
-    if (error) throw error;
-    res.json(data[0] || req.body);
+    if (isSupabaseConfigured) {
+      const { data, error } = await supabase.from('students').insert([req.body]).select();
+      if (!error && data) return res.json(data[0] || req.body);
+    }
+    const newStudent = { id: 'st_' + Date.now(), ...req.body };
+    fallbackStudents.push(newStudent);
+    res.json(newStudent);
   } catch (err) {
-    console.error("Supabase Error:", err.message);
     res.status(500).json({ error: "Database error", message: err.message });
   }
 });
@@ -116,27 +208,27 @@ app.post("/api/students", async (req, res) => {
 // ➤ Get Students
 app.get("/api/students", async (req, res) => {
   try {
-    const { data, error } = await supabase.from('students').select('*');
-    if (error) throw error;
-    res.json(data || []);
+    if (isSupabaseConfigured) {
+      const { data, error } = await supabase.from('students').select('*');
+      if (!error && data) return res.json(data);
+    }
+    res.json(fallbackStudents);
   } catch (err) {
-    console.error("Supabase Error:", err.message);
-    res.status(500).json({ error: "Database error", message: err.message });
+    res.json(fallbackStudents);
   }
 });
 
 // ➤ Add Company
 app.post("/api/companies", async (req, res) => {
   try {
-    const { data, error } = await supabase
-      .from('companies')
-      .insert([req.body])
-      .select();
-
-    if (error) throw error;
-    res.json(data[0] || req.body);
+    if (isSupabaseConfigured) {
+      const { data, error } = await supabase.from('companies').insert([req.body]).select();
+      if (!error && data) return res.json(data[0] || req.body);
+    }
+    const newCompany = { id: 'cmp_' + Date.now(), ...req.body };
+    fallbackCompanies.push(newCompany);
+    res.json(newCompany);
   } catch (err) {
-    console.error("Supabase Error:", err.message);
     res.status(500).json({ error: "Database error", message: err.message });
   }
 });
@@ -144,28 +236,41 @@ app.post("/api/companies", async (req, res) => {
 // ➤ Get Companies
 app.get("/api/companies", async (req, res) => {
   try {
-    const { data, error } = await supabase.from('companies').select('*');
-    if (error) throw error;
-    res.json(data || []);
+    if (isSupabaseConfigured) {
+      const { data, error } = await supabase.from('companies').select('*');
+      if (!error && data) return res.json(data);
+    }
+    res.json(fallbackCompanies);
   } catch (err) {
-    console.error("Supabase Error:", err.message);
-    res.status(500).json({ error: "Database error", message: err.message });
+    res.json(fallbackCompanies);
   }
 });
 
 // ➤ Add Placement
 app.post("/api/placements", async (req, res) => {
   try {
-    const { data, error } = await supabase
-      .from('placements')
-      .insert([req.body])
-      .select();
-
-    if (error) throw error;
-    res.json(data[0] || req.body);
+    if (isSupabaseConfigured) {
+      const { data, error } = await supabase.from('placements').insert([req.body]).select();
+      if (!error && data) return res.json(data[0] || req.body);
+    }
+    const newPlacement = { id: 'plc_' + Date.now(), ...req.body };
+    fallbackPlacements.push(newPlacement);
+    res.json(newPlacement);
   } catch (err) {
-    console.error("Supabase Error:", err.message);
     res.status(500).json({ error: "Database error", message: err.message });
+  }
+});
+
+// ➤ Get Placements
+app.get("/api/placements", async (req, res) => {
+  try {
+    if (isSupabaseConfigured) {
+      const { data, error } = await supabase.from('placements').select('*');
+      if (!error && data) return res.json(data);
+    }
+    res.json(fallbackPlacements);
+  } catch (err) {
+    res.json(fallbackPlacements);
   }
 });
 
@@ -193,11 +298,10 @@ app.post("/api/internships", async (req, res) => {
     try {
       fs.writeFileSync(internshipsFile, JSON.stringify(internships, null, 2));
     } catch (writeErr) {
-      console.warn("Local JSON write warning (read-only filesystem):", writeErr.message);
+      console.warn("Local JSON write warning:", writeErr.message);
     }
     res.json(newInternship);
   } catch (err) {
-    console.error("Local Save Error:", err.message);
     res.status(500).json({ error: "IO error", message: err.message });
   }
 });
@@ -215,8 +319,7 @@ app.get("/api/internships", async (req, res) => {
     }
     res.json(internships);
   } catch (err) {
-    console.error("Local Read Error:", err.message);
-    res.status(500).json({ error: "IO error", message: err.message });
+    res.json([]);
   }
 });
 
@@ -237,13 +340,14 @@ app.post("/api/interviews", async (req, res) => {
     try {
       fs.writeFileSync(interviewsFile, JSON.stringify(arr, null, 2));
     } catch (writeErr) {
-      console.warn("Local JSON write warning (read-only filesystem):", writeErr.message);
+      console.warn("Local JSON write warning:", writeErr.message);
     }
     res.json(item);
   } catch (err) {
     res.status(500).json({ error: "IO error", message: err.message });
   }
 });
+
 app.get("/api/interviews", async (req, res) => {
   try {
     let arr = [];
@@ -256,19 +360,7 @@ app.get("/api/interviews", async (req, res) => {
     }
     res.json(arr);
   } catch (err) {
-    res.status(500).json({ error: "IO error", message: err.message });
-  }
-});
-
-// ➤ Get Placements
-app.get("/api/placements", async (req, res) => {
-  try {
-    const { data, error } = await supabase.from('placements').select('*');
-    if (error) throw error;
-    res.json(data || []);
-  } catch (err) {
-    console.error("Supabase Error:", err.message);
-    res.status(500).json({ error: "Database error", message: err.message });
+    res.json([]);
   }
 });
 
@@ -279,7 +371,7 @@ const PORT = process.env.PORT || 5000;
 if (require.main === module) {
   app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
-    console.log(`🔌 Database Mode: Supabase PostgreSQL Active`);
+    console.log(`🔌 Database Mode: ${isSupabaseConfigured ? 'Supabase Active' : 'In-Memory Fallback Active'}`);
   });
 }
 
