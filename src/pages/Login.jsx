@@ -124,7 +124,7 @@ export default function Login() {
   }));
 
   return (
-    <div className="min-h-screen w-full relative flex items-center justify-center lg:justify-end overflow-hidden bg-[#121212] lg:pr-24 font-sans border-0 p-0 m-0">
+    <div className="min-h-dvh w-full relative flex flex-col lg:flex-row items-center justify-center lg:justify-end overflow-y-auto py-8 px-4 sm:px-6 lg:pr-24 bg-[#121212] font-sans border-0 m-0">
       
       <motion.div 
         animate={{ x: mousePos.x * -1, y: mousePos.y * -1 }} 
@@ -158,16 +158,16 @@ export default function Login() {
         </motion.div>
       </div>
 
-      <motion.div initial={{ opacity: 0, scale: 0.9, y: 30, rotateX: 10 }} animate={{ opacity: 1, scale: 1, y: 0, rotateX: 0 }} transition={{ type: "spring", stiffness: 100, damping: 20 }} style={{ perspective: 1000 }} className="w-full max-w-[460px] z-20 mx-4 lg:mx-0 relative">
+      <motion.div initial={{ opacity: 0, scale: 0.9, y: 30, rotateX: 10 }} animate={{ opacity: 1, scale: 1, y: 0, rotateX: 0 }} transition={{ type: "spring", stiffness: 100, damping: 20 }} style={{ perspective: 1000 }} className="w-full max-w-[460px] z-20 my-auto relative">
         <div className="absolute -inset-[1px] bg-gradient-to-br from-red-500/30 via-transparent to-rose-500/30 rounded-[2.5rem] blur-sm pointer-events-none"></div>
         
-        <div className="relative bg-[#121212]/70 backdrop-blur-3xl border border-white/10 px-8 sm:px-10 py-8 rounded-[2.5rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.8),0_0_30px_-5px_rgba(248,113,113,0.2)] overflow-hidden">
+        <div className="relative bg-[#121212]/80 backdrop-blur-3xl border border-white/10 px-6 sm:px-10 py-8 rounded-[2rem] sm:rounded-[2.5rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.8),0_0_30px_-5px_rgba(248,113,113,0.2)] overflow-hidden">
           
           <div className="text-center mb-6 lg:hidden flex justify-center">
              <Logo size="md" />
           </div>
 
-          <h3 className="text-2xl font-bold text-white mb-1">{isLogin ? 'Welcome Back' : 'Join the Ecosystem'}</h3>
+          <h3 className="text-xl sm:text-2xl font-bold text-white mb-1">{isLogin ? 'Welcome Back' : 'Join the Ecosystem'}</h3>
           <p className="text-slate-400 text-xs mb-4 font-medium">
             {isLogin ? 'Select your role or click a 1-Click Demo Login below.' : 'Fill in your details to create a new account.'}
           </p>
@@ -176,13 +176,13 @@ export default function Login() {
           <div className="mb-5 bg-[#181818]/90 p-2.5 rounded-2xl border border-white/10">
             <p className="text-[10px] font-bold text-red-400 uppercase tracking-wider mb-2 text-center">⚡ Quick 1-Click Demo Login</p>
             <div className="flex gap-2">
-              <button type="button" onClick={() => handleFillDemo('student')} className="flex-1 py-1.5 px-2 bg-red-500/10 hover:bg-red-500/20 text-red-300 text-[11px] font-bold rounded-xl border border-red-500/30 transition-all text-center cursor-pointer">
+              <button type="button" onClick={() => handleFillDemo('student')} className="flex-1 py-2 px-2 bg-red-500/10 hover:bg-red-500/20 text-red-300 text-[11px] font-bold rounded-xl border border-red-500/30 transition-all text-center cursor-pointer active:scale-95">
                 Student
               </button>
-              <button type="button" onClick={() => handleFillDemo('company')} className="flex-1 py-1.5 px-2 bg-orange-500/10 hover:bg-orange-500/20 text-orange-300 text-[11px] font-bold rounded-xl border border-orange-500/30 transition-all text-center cursor-pointer">
+              <button type="button" onClick={() => handleFillDemo('company')} className="flex-1 py-2 px-2 bg-orange-500/10 hover:bg-orange-500/20 text-orange-300 text-[11px] font-bold rounded-xl border border-orange-500/30 transition-all text-center cursor-pointer active:scale-95">
                 Company
               </button>
-              <button type="button" onClick={() => handleFillDemo('admin')} className="flex-1 py-1.5 px-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-[11px] font-bold rounded-xl border border-rose-500/30 transition-all text-center cursor-pointer">
+              <button type="button" onClick={() => handleFillDemo('admin')} className="flex-1 py-2 px-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-[11px] font-bold rounded-xl border border-rose-500/30 transition-all text-center cursor-pointer active:scale-95">
                 Admin
               </button>
             </div>
@@ -199,14 +199,14 @@ export default function Login() {
             {/* ALWAYS SHOWN ROLE SELECTOR */}
             <div>
               <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Account Tier</p>
-              <div className="grid grid-cols-3 gap-2.5">
+              <div className="grid grid-cols-3 gap-2">
                 {roles.map((role) => {
                   const Icon = role.icon;
                   const isSelected = selectedRole === role.id;
                   return (
                     <button key={role.id} type="button" onClick={() => setSelectedRole(role.id)} className={`relative flex flex-col items-center justify-center p-2.5 rounded-2xl border transition-all duration-300 group overflow-hidden cursor-pointer ${isSelected ? role.color : 'border-white/5 bg-[#1e1e1e]/50 text-slate-400 hover:bg-[#1e1e1e]/80 hover:border-slate-500/30 hover:text-slate-200'}`}>
                       {isSelected && <motion.div layoutId="roleGlow" className="absolute inset-0 bg-gradient-to-t from-white/10 to-transparent"></motion.div>}
-                      <Icon size={20} className={`mb-1 relative z-10 transition-transform ${isSelected ? '' : 'group-hover:-translate-y-1'}`} strokeWidth={isSelected ? 2.5 : 2} />
+                      <Icon size={18} className={`mb-1 relative z-10 transition-transform ${isSelected ? '' : 'group-hover:-translate-y-1'}`} strokeWidth={isSelected ? 2.5 : 2} />
                       <span className="text-[10px] font-bold tracking-wide relative z-10">{role.label}</span>
                     </button>
                   );
@@ -282,52 +282,52 @@ export default function Login() {
       </motion.div>
 
       {/* AI Chatbot */}
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+      <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end">
         <AnimatePresence>
           {isChatOpen && (
             <motion.div
               initial={{ opacity: 0, y: 20, scale: 0.9 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.9 }}
-              className="mb-4 w-80 sm:w-96 bg-[#121212]/95 backdrop-blur-2xl border border-green-500/40 rounded-2xl shadow-[0_0_40px_rgba(34,197,94,0.2)] overflow-hidden flex flex-col"
-              style={{ height: '420px' }}
+              className="mb-4 w-72 sm:w-96 bg-[#121212]/95 backdrop-blur-2xl border border-green-500/40 rounded-2xl shadow-[0_0_40px_rgba(34,197,94,0.2)] overflow-hidden flex flex-col"
+              style={{ height: '380px' }}
             >
-              <div className="bg-gradient-to-r from-green-600/20 to-green-400/10 p-4 border-b border-green-500/20 flex justify-between items-center">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-green-500/20 rounded-lg">
-                    <Bot className="text-green-400" size={20} />
+              <div className="bg-gradient-to-r from-green-600/20 to-green-400/10 p-3.5 border-b border-green-500/20 flex justify-between items-center">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-1.5 bg-green-500/20 rounded-lg">
+                    <Bot className="text-green-400" size={18} />
                   </div>
                   <div>
-                    <h4 className="text-white font-bold text-sm tracking-wide">Login Assistant AI</h4>
-                    <p className="text-green-400 text-[10px] uppercase tracking-wider font-semibold">Online</p>
+                    <h4 className="text-white font-bold text-xs tracking-wide">Login Assistant AI</h4>
+                    <p className="text-green-400 text-[9px] uppercase tracking-wider font-semibold">Online</p>
                   </div>
                 </div>
-                <button type="button" onClick={() => setIsChatOpen(false)} className="text-slate-400 hover:text-white transition-colors cursor-pointer bg-white/5 hover:bg-white/10 p-1.5 rounded-lg border-0">
-                  <X size={18} />
+                <button type="button" onClick={() => setIsChatOpen(false)} className="text-slate-400 hover:text-white transition-colors cursor-pointer bg-white/5 hover:bg-white/10 p-1 rounded-lg border-0">
+                  <X size={16} />
                 </button>
               </div>
               
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              <div className="flex-1 overflow-y-auto p-3 space-y-3">
                 {chatMessages.map((msg, idx) => (
                   <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} key={idx} className={`flex ${msg.sender === 'ai' ? 'justify-start' : 'justify-end'}`}>
-                    <div className={`max-w-[85%] p-3.5 rounded-2xl text-sm leading-relaxed shadow-sm ${msg.sender === 'ai' ? 'bg-green-500/10 border border-green-500/30 text-green-50 rounded-tl-sm' : 'bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 text-white rounded-tr-sm'}`}>
+                    <div className={`max-w-[85%] p-3 rounded-2xl text-xs leading-relaxed shadow-sm ${msg.sender === 'ai' ? 'bg-green-500/10 border border-green-500/30 text-green-50 rounded-tl-sm' : 'bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 text-white rounded-tr-sm'}`}>
                       {msg.text}
                     </div>
                   </motion.div>
                 ))}
               </div>
               
-              <div className="p-3 border-t border-green-500/20 bg-[#161616]">
+              <div className="p-2.5 border-t border-green-500/20 bg-[#161616]">
                 <form onSubmit={handleSendMessage} className="relative flex items-center m-0">
                   <input
                     type="text"
                     value={chatInput}
                     onChange={(e) => setChatInput(e.target.value)}
                     placeholder="Ask how to login..."
-                    className="w-full bg-[#222] text-white text-sm rounded-xl pl-4 pr-12 py-3 focus:outline-none focus:ring-1 focus:ring-green-500/50 border border-white/10 shadow-inner"
+                    className="w-full bg-[#222] text-white text-xs rounded-xl pl-3 pr-10 py-2.5 focus:outline-none focus:ring-1 focus:ring-green-500/50 border border-white/10 shadow-inner"
                   />
-                  <button type="submit" disabled={!chatInput.trim()} className="absolute right-2 p-2 bg-green-500/20 border-0 rounded-lg text-green-400 hover:text-green-300 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors hover:bg-green-500/30">
-                    <Send size={16} />
+                  <button type="submit" disabled={!chatInput.trim()} className="absolute right-1.5 p-1.5 bg-green-500/20 border-0 rounded-lg text-green-400 hover:text-green-300 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors hover:bg-green-500/30">
+                    <Send size={14} />
                   </button>
                 </form>
               </div>
@@ -340,9 +340,9 @@ export default function Login() {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setIsChatOpen(!isChatOpen)}
-          className="w-16 h-16 rounded-full bg-gradient-to-tr from-green-500 to-emerald-400 shadow-[0_0_30px_rgba(34,197,94,0.5)] flex items-center justify-center text-white cursor-pointer hover:shadow-[0_0_40px_rgba(34,197,94,0.7)] transition-shadow border border-green-300/30 group"
+          className="w-14 h-14 rounded-full bg-gradient-to-tr from-green-500 to-emerald-400 shadow-[0_0_30px_rgba(34,197,94,0.5)] flex items-center justify-center text-white cursor-pointer hover:shadow-[0_0_40px_rgba(34,197,94,0.7)] transition-shadow border border-green-300/30 group"
         >
-          {isChatOpen ? <X size={28} /> : <Bot size={28} className="group-hover:animate-pulse" />}
+          {isChatOpen ? <X size={24} /> : <Bot size={24} className="group-hover:animate-pulse" />}
         </motion.button>
       </div>
     </div>
