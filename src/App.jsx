@@ -46,7 +46,7 @@ const LockedOverlay = ({ pageTitle = "Protected Feature" }) => {
 const PrivateRoute = ({ children, pageTitle = "Feature" }) => {
   const { token, loading } = useContext(AuthContext);
   if (loading) return null;
-  return token ? children : <Layout><LockedOverlay pageTitle={pageTitle} /></Layout>;
+  return token ? children : <Landing initialLockTitle={pageTitle} />;
 };
 
 function AppRoutes() {
@@ -59,6 +59,7 @@ function AppRoutes() {
       <Route path="/login" element={<Login />} />
       <Route path="/landing" element={<Landing />} />
       <Route path="/" element={token ? <Layout><Dashboard /></Layout> : <Landing />} />
+      <Route path="/dashboard" element={token ? <Layout><Dashboard /></Layout> : <Landing />} />
       <Route path="/students" element={<PrivateRoute pageTitle="Student Directory"><Students /></PrivateRoute>} />
       <Route path="/companies" element={<PrivateRoute pageTitle="Visiting Companies"><Companies /></PrivateRoute>} />
       <Route path="/internships" element={<PrivateRoute pageTitle="Active Internships"><Internships /></PrivateRoute>} />

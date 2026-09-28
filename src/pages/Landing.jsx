@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Banner from '../components/Banner';
 import Logo from '../components/Logo';
@@ -13,11 +13,19 @@ const COMPANIES_SHOWCASE = [
   { id: 'c4', name: 'Uber', role: 'Backend Specialist', package: '42.0 LPA', location: 'Bangalore', type: 'Full-time', skills: ['Node.js', 'PostgreSQL', 'Go'] }
 ];
 
-export default function Landing() {
+export default function Landing({ initialLockTitle, initialLockMessage }) {
   const navigate = useNavigate();
-  const [lockModalOpen, setLockModalOpen] = useState(false);
-  const [lockTitle, setLockTitle] = useState("Authentication Required");
-  const [lockMessage, setLockMessage] = useState("Sign in or create a free account to unlock full placement features.");
+  const [lockModalOpen, setLockModalOpen] = useState(!!initialLockTitle);
+  const [lockTitle, setLockTitle] = useState(initialLockTitle || "Authentication Required");
+  const [lockMessage, setLockMessage] = useState(initialLockMessage || "Sign in or create a free account to unlock full placement features.");
+
+  useEffect(() => {
+    if (initialLockTitle) {
+      setLockTitle(initialLockTitle);
+      setLockMessage(initialLockMessage || `Sign in or create a free account to access ${initialLockTitle}.`);
+      setLockModalOpen(true);
+    }
+  }, [initialLockTitle, initialLockMessage]);
 
   const triggerAuthModal = (title, message) => {
     setLockTitle(title || "Authentication Required");

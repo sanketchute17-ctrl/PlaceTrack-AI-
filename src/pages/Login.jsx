@@ -2,7 +2,7 @@ import { useState, useContext, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, Briefcase, ShieldCheck, Mail, Lock, Rocket, MoveRight, Bot, Send, X } from 'lucide-react';
+import { User, Briefcase, ShieldCheck, Mail, Lock, Rocket, MoveRight, Bot, Send, X, ArrowLeft } from 'lucide-react';
 import Logo from '../components/Logo';
 
 export default function Login() {
@@ -126,6 +126,16 @@ export default function Login() {
   return (
     <div className="min-h-dvh w-full relative flex flex-col lg:flex-row items-center justify-center lg:justify-end overflow-y-auto py-8 px-4 sm:px-6 lg:pr-24 bg-[#121212] font-sans border-0 m-0">
       
+      {/* TOP FLOATING BACK TO HOME BUTTON */}
+      <div className="absolute top-4 left-4 sm:top-6 sm:left-6 z-30">
+        <button
+          onClick={() => navigate('/')}
+          className="px-3.5 py-2 bg-[#1e1e1e]/80 hover:bg-[#282828] border border-white/10 hover:border-red-500/50 text-zinc-300 hover:text-white rounded-xl text-xs font-bold transition-all shadow-lg flex items-center gap-2 cursor-pointer backdrop-blur-md"
+        >
+          <ArrowLeft size={16} />
+          <span>Back to Front Page Showcase</span>
+        </button>
+      </div>
       <motion.div 
         animate={{ x: mousePos.x * -1, y: mousePos.y * -1 }} 
         transition={{ type: "spring", stiffness: 40, damping: 30 }}
