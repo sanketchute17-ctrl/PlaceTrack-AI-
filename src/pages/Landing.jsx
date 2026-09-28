@@ -13,10 +13,10 @@ const COMPANIES_SHOWCASE = [
   { id: 'c4', name: 'Uber', role: 'Backend Specialist', package: '42.0 LPA', location: 'Bangalore', type: 'Full-time', skills: ['Node.js', 'PostgreSQL', 'Go'] }
 ];
 
-export default function Landing({ initialLockTitle, initialLockMessage }) {
+export default function Landing({ initialLockTitle, initialLockMessage, showAuthModal }) {
   const navigate = useNavigate();
-  const [lockModalOpen, setLockModalOpen] = useState(!!initialLockTitle);
-  const [lockTitle, setLockTitle] = useState(initialLockTitle || "Authentication Required");
+  const [lockModalOpen, setLockModalOpen] = useState(!!initialLockTitle || !!showAuthModal);
+  const [lockTitle, setLockTitle] = useState(initialLockTitle || "Sign In to PlaceTrack AI");
   const [lockMessage, setLockMessage] = useState(initialLockMessage || "Sign in or create a free account to unlock full placement features.");
 
   useEffect(() => {
@@ -24,11 +24,22 @@ export default function Landing({ initialLockTitle, initialLockMessage }) {
       setLockTitle(initialLockTitle);
       setLockMessage(initialLockMessage || `Sign in or create a free account to access ${initialLockTitle}.`);
       setLockModalOpen(true);
+    } else if (showAuthModal) {
+      setLockTitle("Sign In to PlaceTrack AI");
+      setLockMessage("Sign in or create a free account to unlock full placement features.");
+      setLockModalOpen(true);
     }
-  }, [initialLockTitle, initialLockMessage]);
+  }, [initialLockTitle, initialLockMessage, showAuthModal]);
+
+  const handleCloseModal = () => {
+    setLockModalOpen(false);
+    if (window.location.pathname === '/login') {
+      navigate('/', { replace: true });
+    }
+  };
 
   const triggerAuthModal = (title, message) => {
-    setLockTitle(title || "Authentication Required");
+    setLockTitle(title || "Sign In to PlaceTrack AI");
     setLockMessage(message || "Sign in or create a free account to unlock full placement features.");
     setLockModalOpen(true);
   };
@@ -52,7 +63,7 @@ export default function Landing({ initialLockTitle, initialLockMessage }) {
 
         <div className="flex items-center gap-3">
           <button
-            onClick={() => navigate('/login')}
+            onClick={() => triggerAuthModal("Sign In to PlaceTrack AI", "Choose your account tier or quick fill demo credentials.")}
             className="px-4 py-2.5 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-bold rounded-xl text-xs sm:text-sm transition-all shadow-[0_0_20px_rgba(239,68,68,0.3)] flex items-center gap-2 cursor-pointer"
           >
             <span>Sign In / Register</span>
@@ -84,7 +95,7 @@ export default function Landing({ initialLockTitle, initialLockMessage }) {
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <button
-            onClick={() => navigate('/login')}
+            onClick={() => triggerAuthModal("Unlock Full Portal Access", "Create a free account or sign in with 1-click demo credentials.")}
             className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-red-600 via-rose-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white font-extrabold rounded-2xl text-base transition-all shadow-[0_0_30px_rgba(239,68,68,0.4)] flex items-center justify-center gap-2 cursor-pointer"
           >
             <span>Get Started & Unlock Access</span>
@@ -266,7 +277,7 @@ export default function Landing({ initialLockTitle, initialLockMessage }) {
           <Logo size="sm" />
           <p>© 2026 PlaceTrack AI. All rights reserved. Next-Gen Campus Recruitment Platform.</p>
           <button
-            onClick={() => navigate('/login')}
+            onClick={() => triggerAuthModal("Sign In to Portal", "Choose your account tier or quick fill demo credentials.")}
             className="text-red-400 font-bold hover:underline cursor-pointer"
           >
             Sign In to Portal →
@@ -277,7 +288,7 @@ export default function Landing({ initialLockTitle, initialLockMessage }) {
       {/* LOCK MODAL FOR GUEST ACTIONS */}
       <LockModal
         isOpen={lockModalOpen}
-        onClose={() => setLockModalOpen(false)}
+        onClose={handleCloseModal}
         title={lockTitle}
         message={lockMessage}
       />

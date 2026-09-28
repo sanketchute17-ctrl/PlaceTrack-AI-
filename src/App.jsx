@@ -56,7 +56,7 @@ function AppRoutes() {
 
   return (
     <Routes>
-      <Route path="/login" element={<Login />} />
+      <Route path="/login" element={token ? <Layout><Dashboard /></Layout> : <Landing showAuthModal={true} />} />
       <Route path="/landing" element={<Landing />} />
       <Route path="/" element={token ? <Layout><Dashboard /></Layout> : <Landing />} />
       <Route path="/dashboard" element={token ? <Layout><Dashboard /></Layout> : <Landing />} />
