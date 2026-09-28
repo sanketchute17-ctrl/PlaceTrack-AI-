@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from 'react';
-import axios from 'axios';
+import api from '../api/axios';
 import AnimatedPage from '../components/AnimatedPage';
 import Card from '../components/Card';
 import Skeleton from '../components/Skeleton';
@@ -25,7 +25,7 @@ export default function Internships() {
 
   const fetchInternships = async () => {
     try {
-      const { data } = await axios.get('http://localhost:5000/api/internships');
+      const { data } = await api.get('/internships');
       setInternships(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Failed to fetch internships', err);
@@ -49,14 +49,14 @@ export default function Internships() {
       const eligibilityArray = formData.eligibility.split(',').map(s => s.trim()).filter(Boolean);
       const payload = { ...formData, eligibility: eligibilityArray };
 
-      await axios.post('http://localhost:5000/api/internships', payload);
+      await api.post('/internships', payload);
       
       fetchInternships();
       handleCloseModal();
       setFormData({ name: '', role: '', package: '', location: '', duration: '', eligibility: '' });
     } catch (err) {
       console.error('Failed to add internship', err);
-      alert('Failed to add internship plugin constraint. Server connection refused.');
+      alert('Failed to add internship. Please check server connection.');
     } finally {
       setIsSubmitting(false);
     }
@@ -134,7 +134,7 @@ export default function Internships() {
         <div className="text-center py-20 bg-red-500/10 rounded-xl border border-red-500/20 flex flex-col items-center">
           <div className="w-16 h-16 bg-red-500/20 text-red-500 rounded-full flex items-center justify-center mb-4 border border-red-500/20"><Building2 size={24} /></div>
           <h3 className="text-lg font-bold text-red-400 mb-1">Database Error</h3>
-          <p className="text-red-400/80 font-medium max-w-sm">Failed to fetch data from Supabase. Ensure 'internships' table exists.</p>
+          <p className="text-red-400/80 font-medium max-w-sm">Failed to fetch data from backend.</p>
         </div>
       ) : internships.length === 0 ? (
         <div className="text-center py-24 bg-[#1e1e1e] rounded-xl border border-[#333] shadow-xl">

@@ -1,10 +1,10 @@
 import { useState, useEffect, useContext } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api/axios';
 import AnimatedPage from '../components/AnimatedPage';
 import Card from '../components/Card';
 import Skeleton from '../components/Skeleton';
-import { Building2, Rocket, MapPin, Briefcase, Search as SearchIcon } from 'lucide-react';
+import { MapPin, Briefcase, Search as SearchIcon } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 
 export default function Search() {
@@ -20,8 +20,8 @@ export default function Search() {
       setLoading(true);
       try {
         const [companiesRes, internshipsRes] = await Promise.all([
-          axios.get('http://localhost:5000/api/companies').catch(() => ({ data: [] })),
-          axios.get('http://localhost:5000/api/internships').catch(() => ({ data: [] }))
+          api.get('/companies').catch(() => ({ data: [] })),
+          api.get('/internships').catch(() => ({ data: [] }))
         ]);
 
         const allData = [

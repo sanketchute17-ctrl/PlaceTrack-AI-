@@ -31,6 +31,11 @@ app.get("/", (req, res) => {
   res.send("🚀 API running with Supabase PostgreSQL...");
 });
 
+// Health check for Vercel API
+app.get("/api", (req, res) => {
+  res.json({ message: "🚀 PlaceTrack API serverless endpoint active" });
+});
+
 // ➤ Register New User
 app.post("/api/auth/register", async (req, res) => {
   try {
@@ -58,7 +63,7 @@ app.post("/api/auth/register", async (req, res) => {
     res.json({ _id: user.id, name: user.name, email: user.email, role: user.role, token });
   } catch (err) {
     console.error("Auth Error:", err);
-    res.status(500).json({ message: "Database err! Make sure your Supabase `users` table is created." });
+    res.status(500).json({ message: err.message || "Database err! Make sure your Supabase `users` table is created." });
   }
 });
 
@@ -72,7 +77,7 @@ app.post("/api/auth/login", async (req, res) => {
     
     if (error) {
       console.error("Supabase Query Error:", error);
-      return res.status(500).json({ message: "Database error during login" });
+      return res.status(500).json({ message: "Database error during login: " + error.message });
     }
 
     if (!data || data.length === 0) {
@@ -173,7 +178,11 @@ app.post("/api/internships", async (req, res) => {
   try {
     let internships = [];
     if (fs.existsSync(internshipsFile)) {
-      internships = JSON.parse(fs.readFileSync(internshipsFile, 'utf8'));
+      try {
+        internships = JSON.parse(fs.readFileSync(internshipsFile, 'utf8'));
+      } catch (e) {
+        internships = [];
+      }
     }
     const newInternship = { 
       id: "int_" + Date.now(), 
@@ -181,7 +190,11 @@ app.post("/api/internships", async (req, res) => {
       created_at: new Date().toISOString()
     };
     internships.push(newInternship);
-    fs.writeFileSync(internshipsFile, JSON.stringify(internships, null, 2));
+    try {
+      fs.writeFileSync(internshipsFile, JSON.stringify(internships, null, 2));
+    } catch (writeErr) {
+      console.warn("Local JSON write warning (read-only filesystem):", writeErr.message);
+    }
     res.json(newInternship);
   } catch (err) {
     console.error("Local Save Error:", err.message);
@@ -194,7 +207,11 @@ app.get("/api/internships", async (req, res) => {
   try {
     let internships = [];
     if (fs.existsSync(internshipsFile)) {
-      internships = JSON.parse(fs.readFileSync(internshipsFile, 'utf8'));
+      try {
+        internships = JSON.parse(fs.readFileSync(internshipsFile, 'utf8'));
+      } catch (e) {
+        internships = [];
+      }
     }
     res.json(internships);
   } catch (err) {
@@ -207,10 +224,21 @@ app.get("/api/internships", async (req, res) => {
 const interviewsFile = path.join(__dirname, 'interviews.json');
 app.post("/api/interviews", async (req, res) => {
   try {
-    let arr = fs.existsSync(interviewsFile) ? JSON.parse(fs.readFileSync(interviewsFile, 'utf8')) : [];
+    let arr = [];
+    if (fs.existsSync(interviewsFile)) {
+      try {
+        arr = JSON.parse(fs.readFileSync(interviewsFile, 'utf8'));
+      } catch (e) {
+        arr = [];
+      }
+    }
     const item = { id: "iv_" + Date.now(), ...req.body, created_at: new Date().toISOString() };
     arr.push(item);
-    fs.writeFileSync(interviewsFile, JSON.stringify(arr, null, 2));
+    try {
+      fs.writeFileSync(interviewsFile, JSON.stringify(arr, null, 2));
+    } catch (writeErr) {
+      console.warn("Local JSON write warning (read-only filesystem):", writeErr.message);
+    }
     res.json(item);
   } catch (err) {
     res.status(500).json({ error: "IO error", message: err.message });
@@ -218,7 +246,14 @@ app.post("/api/interviews", async (req, res) => {
 });
 app.get("/api/interviews", async (req, res) => {
   try {
-    let arr = fs.existsSync(interviewsFile) ? JSON.parse(fs.readFileSync(interviewsFile, 'utf8')) : [];
+    let arr = [];
+    if (fs.existsSync(interviewsFile)) {
+      try {
+        arr = JSON.parse(fs.readFileSync(interviewsFile, 'utf8'));
+      } catch (e) {
+        arr = [];
+      }
+    }
     res.json(arr);
   } catch (err) {
     res.status(500).json({ error: "IO error", message: err.message });
@@ -241,7 +276,11 @@ app.get("/api/placements", async (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`🔌 Database Mode: Supabase PostgreSQL Active`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`🔌 Database Mode: Supabase PostgreSQL Active`);
+  });
+}
+
+module.exports = app;

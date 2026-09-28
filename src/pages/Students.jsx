@@ -1,9 +1,9 @@
 import { useState, useEffect, useContext } from 'react';
-import axios from 'axios';
+import api from '../api/axios';
 import AnimatedPage from '../components/AnimatedPage';
 import Card from '../components/Card';
 import Skeleton from '../components/Skeleton';
-import { Users, Search, Plus, X, User } from 'lucide-react';
+import { Users, Search, Plus, X } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 
 export default function Students() {
@@ -26,7 +26,7 @@ export default function Students() {
 
   const fetchStudents = async () => {
     try {
-      const { data } = await axios.get('http://localhost:5000/api/students');
+      const { data } = await api.get('/students');
       setStudents(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error(err);
@@ -46,7 +46,7 @@ export default function Students() {
         skills: formData.skills.split(',').map(s => s.trim()).filter(Boolean),
         resumeScore: parseInt(formData.resumeScore) || 0
       };
-      await axios.post('http://localhost:5000/api/students', payload);
+      await api.post('/students', payload);
       fetchStudents();
       setIsModalOpen(false);
       setFormData({ name: '', email: '', branch: 'CSE', skills: '', placementStatus: 'Unplaced', resumeScore: 0 });

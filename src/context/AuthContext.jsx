@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api/axios';
 
 export const AuthContext = createContext();
 
@@ -11,18 +11,15 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       const storedUser = localStorage.getItem('user');
       if (storedUser) setUser(JSON.parse(storedUser));
-    } else {
-      delete axios.defaults.headers.common['Authorization'];
     }
     setLoading(false);
   }, [token]);
 
   const login = async (email, password, role) => {
     try {
-      const { data } = await axios.post('http://localhost:5000/api/auth/login', { email, password });
+      const { data } = await api.post('/auth/login', { email, password });
       
       // Strict Role Validation Check
       if (data.role !== role) {
@@ -42,7 +39,7 @@ export const AuthProvider = ({ children }) => {
   const register = async (name, email, password, role) => {
     try {
       // Create user but DO NOT auto-authenticate via token saving
-      await axios.post('http://localhost:5000/api/auth/register', { name, email, password, role });
+      await api.post('/auth/register', { name, email, password, role });
       return { success: true };
     } catch (error) {
       return { success: false, message: error.response?.data?.message || 'Registration failed' };

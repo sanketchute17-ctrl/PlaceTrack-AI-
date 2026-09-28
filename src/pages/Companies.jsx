@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from 'react';
-import axios from 'axios';
+import api from '../api/axios';
 import AnimatedPage from '../components/AnimatedPage';
 import Card from '../components/Card';
 import Skeleton from '../components/Skeleton';
@@ -24,7 +24,7 @@ export default function Companies() {
 
   const fetchCompanies = async () => {
     try {
-      const { data } = await axios.get('http://localhost:5000/api/companies');
+      const { data } = await api.get('/companies');
       setCompanies(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Failed to fetch companies', err);
@@ -54,7 +54,7 @@ export default function Companies() {
         eligibility: eligibilityArray
       };
 
-      await axios.post('http://localhost:5000/api/companies', payload);
+      await api.post('/companies', payload);
       
       // Refresh list
       fetchCompanies();

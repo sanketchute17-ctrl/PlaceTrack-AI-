@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api/axios';
 import AnimatedPage from '../components/AnimatedPage';
 import StatCard from '../components/StatCard';
 import DashboardCharts from '../components/DashboardCharts';
@@ -22,9 +22,9 @@ export default function Dashboard() {
     const fetchDashboardData = async () => {
       try {
         const [studentsRes, companiesRes, placementsRes] = await Promise.all([
-          axios.get('http://localhost:5000/api/students').catch(() => null),
-          axios.get('http://localhost:5000/api/companies').catch(() => null),
-          axios.get('http://localhost:5000/api/placements').catch(() => null),
+          api.get('/students').catch(() => null),
+          api.get('/companies').catch(() => null),
+          api.get('/placements').catch(() => null),
         ]);
 
         if (!studentsRes || !companiesRes || !placementsRes) {

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api/axios';
 import AnimatedPage from '../components/AnimatedPage';
 import { FileText, TrendingUp, Download, PieChart, Users, Building2 } from 'lucide-react';
 import Skeleton from '../components/Skeleton';
@@ -12,9 +12,9 @@ export default function Reports() {
     const generateReport = async () => {
       try {
         const [pRes, sRes, cRes] = await Promise.all([
-          axios.get('http://localhost:5000/api/placements').catch(() => ({ data: [] })),
-          axios.get('http://localhost:5000/api/students').catch(() => ({ data: [] })),
-          axios.get('http://localhost:5000/api/companies').catch(() => ({ data: [] }))
+          api.get('/placements').catch(() => ({ data: [] })),
+          api.get('/students').catch(() => ({ data: [] })),
+          api.get('/companies').catch(() => ({ data: [] }))
         ]);
         setStats({
           placed: pRes.data.length || 0,

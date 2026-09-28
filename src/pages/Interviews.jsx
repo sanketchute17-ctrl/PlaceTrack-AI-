@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from 'react';
-import axios from 'axios';
+import api from '../api/axios';
 import AnimatedPage from '../components/AnimatedPage';
 import Skeleton from '../components/Skeleton';
 import { Calendar, Clock, MapPin, Video, Plus, X, Users } from 'lucide-react';
@@ -14,7 +14,7 @@ export default function Interviews() {
 
   const fetchInterviews = async () => {
     try {
-      const { data } = await axios.get('http://localhost:5000/api/interviews');
+      const { data } = await api.get('/interviews');
       setInterviews(Array.isArray(data) ? data : []);
     } catch {
       setInterviews([]);
@@ -28,7 +28,7 @@ export default function Interviews() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:5000/api/interviews', formData);
+      await api.post('/interviews', formData);
       setIsModalOpen(false);
       fetchInterviews();
       setFormData({ company: '', date: '', time: '', type: 'Virtual', link: '' });
