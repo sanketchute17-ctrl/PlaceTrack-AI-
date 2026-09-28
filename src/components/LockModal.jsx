@@ -1,4 +1,4 @@
-import { useNavigate } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Lock, ShieldAlert, ArrowRight, X } from 'lucide-react';
 import Logo from './Logo';
 

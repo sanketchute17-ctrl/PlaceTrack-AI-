@@ -1,4 +1,4 @@
-import { Routes, Route, useNavigate } from 'react';
+import { Routes, Route, useNavigate } from 'react-router-dom';
 import { useContext } from 'react';
 import Layout from './components/Layout';
 import Landing from './pages/Landing';
