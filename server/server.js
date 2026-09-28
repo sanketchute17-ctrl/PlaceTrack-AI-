@@ -1,11 +1,17 @@
-// Load env
-require("dotenv").config();
+import dotenv from "dotenv";
+import express from "express";
+import cors from "cors";
+import { createClient } from "@supabase/supabase-js";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
-const express = require("express");
-const cors = require("cors");
-const { createClient } = require('@supabase/supabase-js');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 
@@ -56,17 +62,12 @@ const generateToken = (userId) => {
 // ---------------- ROUTES ----------------
 
 // Health check
-app.get("/", (req, res) => {
-  res.send("🚀 PlaceTrack AI API is active...");
-});
-
-// Health check for Vercel API
-app.get("/api", (req, res) => {
-  res.json({ message: "🚀 PlaceTrack API serverless endpoint active" });
+app.get(["/", "/api"], (req, res) => {
+  res.json({ status: "ok", message: "🚀 PlaceTrack AI API is active" });
 });
 
 // ➤ Register New User
-app.post("/api/auth/register", async (req, res) => {
+app.post(["/api/auth/register", "/auth/register"], async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
 
@@ -137,7 +138,7 @@ app.post("/api/auth/register", async (req, res) => {
 });
 
 // ➤ Login User
-app.post("/api/auth/login", async (req, res) => {
+app.post(["/api/auth/login", "/auth/login"], async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -191,7 +192,7 @@ app.post("/api/auth/login", async (req, res) => {
 });
 
 // ➤ Add Student
-app.post("/api/students", async (req, res) => {
+app.post(["/api/students", "/students"], async (req, res) => {
   try {
     if (isSupabaseConfigured) {
       const { data, error } = await supabase.from('students').insert([req.body]).select();
@@ -206,7 +207,7 @@ app.post("/api/students", async (req, res) => {
 });
 
 // ➤ Get Students
-app.get("/api/students", async (req, res) => {
+app.get(["/api/students", "/students"], async (req, res) => {
   try {
     if (isSupabaseConfigured) {
       const { data, error } = await supabase.from('students').select('*');
@@ -219,7 +220,7 @@ app.get("/api/students", async (req, res) => {
 });
 
 // ➤ Add Company
-app.post("/api/companies", async (req, res) => {
+app.post(["/api/companies", "/companies"], async (req, res) => {
   try {
     if (isSupabaseConfigured) {
       const { data, error } = await supabase.from('companies').insert([req.body]).select();
@@ -234,7 +235,7 @@ app.post("/api/companies", async (req, res) => {
 });
 
 // ➤ Get Companies
-app.get("/api/companies", async (req, res) => {
+app.get(["/api/companies", "/companies"], async (req, res) => {
   try {
     if (isSupabaseConfigured) {
       const { data, error } = await supabase.from('companies').select('*');
@@ -247,7 +248,7 @@ app.get("/api/companies", async (req, res) => {
 });
 
 // ➤ Add Placement
-app.post("/api/placements", async (req, res) => {
+app.post(["/api/placements", "/placements"], async (req, res) => {
   try {
     if (isSupabaseConfigured) {
       const { data, error } = await supabase.from('placements').insert([req.body]).select();
@@ -262,7 +263,7 @@ app.post("/api/placements", async (req, res) => {
 });
 
 // ➤ Get Placements
-app.get("/api/placements", async (req, res) => {
+app.get(["/api/placements", "/placements"], async (req, res) => {
   try {
     if (isSupabaseConfigured) {
       const { data, error } = await supabase.from('placements').select('*');
@@ -275,11 +276,9 @@ app.get("/api/placements", async (req, res) => {
 });
 
 // ➤ Add Internship (Local JSON Fallback)
-const fs = require('fs');
-const path = require('path');
 const internshipsFile = path.join(__dirname, 'internships.json');
 
-app.post("/api/internships", async (req, res) => {
+app.post(["/api/internships", "/internships"], async (req, res) => {
   try {
     let internships = [];
     if (fs.existsSync(internshipsFile)) {
@@ -307,7 +306,7 @@ app.post("/api/internships", async (req, res) => {
 });
 
 // ➤ Get Internships (Local JSON Fallback)
-app.get("/api/internships", async (req, res) => {
+app.get(["/api/internships", "/internships"], async (req, res) => {
   try {
     let internships = [];
     if (fs.existsSync(internshipsFile)) {
@@ -325,7 +324,7 @@ app.get("/api/internships", async (req, res) => {
 
 // ➤ Interview Hooks (Local JSON Fallback)
 const interviewsFile = path.join(__dirname, 'interviews.json');
-app.post("/api/interviews", async (req, res) => {
+app.post(["/api/interviews", "/interviews"], async (req, res) => {
   try {
     let arr = [];
     if (fs.existsSync(interviewsFile)) {
@@ -348,7 +347,7 @@ app.post("/api/interviews", async (req, res) => {
   }
 });
 
-app.get("/api/interviews", async (req, res) => {
+app.get(["/api/interviews", "/interviews"], async (req, res) => {
   try {
     let arr = [];
     if (fs.existsSync(interviewsFile)) {
@@ -368,11 +367,11 @@ app.get("/api/interviews", async (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
-if (require.main === module) {
+if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
   app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
     console.log(`🔌 Database Mode: ${isSupabaseConfigured ? 'Supabase Active' : 'In-Memory Fallback Active'}`);
   });
 }
 
-module.exports = app;
+export default app;
